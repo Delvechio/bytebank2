@@ -1,3 +1,4 @@
+import 'package:bytebank2/database/app_database.dart';
 import 'package:bytebank2/models/contact.dart';
 import 'package:bytebank2/screens/contact_form.dart';
 import 'package:flutter/material.dart';
@@ -8,19 +9,46 @@ class ContactList extends StatefulWidget {
 }
 
 class _ContactListState extends State<ContactList> {
-  final List<Contact> contacts = [];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Contacts'),
       ),
-      body: ListView.builder(
-        itemBuilder: (BuildContext context, int index) {
-          final Contact contact = contacts[index];
-          return _ContactItem(contact);
+      body: FutureBuilder<List<Contact>>(
+        initialData: [],
+        future: findAll(),
+         builder: (context, snapshot) {
+           switch (snapshot.connectionState) {
+            case ConnectionState.none:
+              break;
+            case ConnectionState.waiting:
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    CircularProgressIndicator(),
+                    Text('Loading')
+                  ],
+                ),
+              );
+              break;
+            case ConnectionState.active:
+              break;
+            case ConnectionState.done:
+              final List<Contact>? contacts = snapshot.data as List<Contact>?;
+              return ListView.builder(
+                itemBuilder: (BuildContext context, int index) {
+                  final Contact contact = contacts![index];
+                  return _ContactItem(contact);
+                },
+                itemCount: contacts!.length,
+              );
+              break;
+          }
+          return Text('Unknow Error');
         },
-        itemCount: contacts.length,
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -28,7 +56,9 @@ class _ContactListState extends State<ContactList> {
               .push(MaterialPageRoute(
                 builder: (context) => ContactForm(),
               ))
-              .then((newContact) => debugPrint(newContact.toString()),);
+              .then(
+                (newContact) => debugPrint(newContact.toString()),
+              );
         },
         child: Icon(Icons.add),
       ),
@@ -40,6 +70,7 @@ class _ContactItem extends StatelessWidget {
   final Contact contact;
 
   _ContactItem(this.contact);
+
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
