@@ -10,7 +10,9 @@ Future<Database> createDatabase() {
           'id INTEGER PRIMARYKEY, '
           'name TEXT,'
           'account_number INTERGER');
-    }, version: 1);
+    }, version: 1,
+//      onDowngrade: onDatabaseDowngradeDelete,
+    );
   });
 }
 
